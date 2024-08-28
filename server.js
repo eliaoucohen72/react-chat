@@ -9,6 +9,10 @@ const PORT = process.env.PORT || 8000;
 // Disable CORS protection by allowing all origins
 app.use(cors());
 
+app.get("/ping", (req, res) => {
+  res.json({ message: "Pong" });
+});
+
 // Create an HTTP server using the Express app
 const server = http.createServer(app);
 
