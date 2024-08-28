@@ -40,6 +40,6 @@ io.on("connection", (socket) => {
 });
 
 // Start the server and listen on the defined port
-server.listen(PORT, "0.0.0.0", () => {
+server.listen(PORT, "0.0.0.0",() => {
   console.log(`Le serveur tourne sur le port ${PORT}`);
 });
