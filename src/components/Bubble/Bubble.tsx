@@ -1,8 +1,8 @@
 import { memo } from "react";
-import style from "../style";
-import { css, getColorFromUsername } from "../utils";
-import { Message } from "../interface";
-import check from "../assets/check.png";
+import style from "./style";
+import { css, getColorFromUsername } from "../../utils";
+import { Message } from "../../interface";
+import check from "../../assets/check.png";
 
 interface BubbleProps {
   index: number;
@@ -13,11 +13,11 @@ interface BubbleProps {
 const Bubble = ({ index, msg, username }: BubbleProps) => {
   const color = getColorFromUsername(msg.username);
   return (
-    <div key={index} style={css(style.message)}>
+    <div key={index} style={css(style.wrapper)}>
       <div
         style={
           msg.username === username
-            ? css(style.outgoingMessage)
+            ? css({ ...style.outgoingMessage, backgroundColor: color })
             : css({ ...style.incomingMessage, backgroundColor: color })
         }
       >

@@ -1,18 +1,23 @@
 import { useState, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
-
-import { SOCKET_SERVER_EVENT, SOCKET_SERVER_URL } from "./constants";
-import InputArea from "./components/InputArea";
+import {
+  SOCKET_CLIENT_EVENT,
+  SOCKET_SERVER_EVENT,
+  SOCKET_SERVER_URL,
+} from "./constants";
+import InputArea from "./components/InputArea/InputArea";
 import { Message } from "./interface";
-import Bubble from "./components/Bubble";
-import Login from "./components/Login";
-import Logged from "./components/Logged";
+import Bubble from "./components/Bubble/Bubble";
+import Login from "./components/Login/Login";
+import Logged from "./components/Logged/Logged";
 
 function App() {
   const [username, setUsername] = useState("");
   const [tempUsername, setTempUsername] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [message, setMessage] = useState("");
+  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     const newSocket = io(SOCKET_SERVER_URL);
@@ -57,6 +62,20 @@ function App() {
     setUsername("");
   };
 
+  const sendMessage = () => {
+    if (socket) {
+      if (file) {
+        // upload to image server
+      }
+      const msg: Message = {
+        username,
+        message,
+      };
+      socket.emit(SOCKET_CLIENT_EVENT, msg);
+      setMessage("");
+    }
+  };
+
   return !username ? (
     <Login
       onChangeTempUsername={onChangeTempUsername}
@@ -67,7 +86,12 @@ function App() {
   ) : (
     <>
       <Logged resetUsername={resetUsername} username={username} />
-      <InputArea socket={socket} username={username} />
+      <InputArea
+        message={message}
+        setFile={setFile}
+        setMessage={setMessage}
+        sendMessage={sendMessage}
+      />
       {messages.map((msg: Message, index: number) => (
         <Bubble index={index} msg={msg} username={username} />
       ))}

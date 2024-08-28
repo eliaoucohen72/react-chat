@@ -1,5 +1,5 @@
 import { memo } from "react";
-import style from "../style";
+import style from "./style";
 
 interface LoginProps {
   tempUsername: string;
@@ -24,7 +24,7 @@ const Login = ({
         placeholder="Your username"
       />
       <button
-        style={style.button}
+        style={style.button(!tempUsername)}
         disabled={!tempUsername.trim()}
         onClick={saveUsername}
       >
