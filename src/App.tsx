@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 import check from './assets/check.png'
 
-const SERVER_URL = "http://localhost:8000";
+const SERVER_URL = "http://localhost:8080";
 const SOCKET_SERVER_EVENT = "SERVER_MSG";
 const SOCKET_CLIENT_EVENT = "CLIENT_MSG";
 
