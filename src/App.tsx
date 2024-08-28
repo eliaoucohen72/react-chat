@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
-import check from './assets/check.png'
+import check from "./assets/check.png";
 
-const SERVER_URL = "http://localhost:8080";
+const SOCKET_SERVER_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://elc-react-chat.up.railway.app"
+    : "http://localhost:8080";
 const SOCKET_SERVER_EVENT = "SERVER_MSG";
 const SOCKET_CLIENT_EVENT = "CLIENT_MSG";
 
@@ -18,7 +21,7 @@ function App() {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const newSocket = io(SERVER_URL);
+    const newSocket = io(SOCKET_SERVER_URL);
     setSocket(newSocket);
 
     newSocket.on(SOCKET_SERVER_EVENT, (msg: Message) => {
@@ -81,7 +84,7 @@ function App() {
             >
               <div className="username">{msg.username}</div>
               <div>{msg.message}</div>
-              <img className="check" src={check} alt='' />
+              <img className="check" src={check} alt="" />
             </div>
           </div>
         );
