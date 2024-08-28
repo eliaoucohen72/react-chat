@@ -1,7 +1,13 @@
+import path from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 import express from "express";
 import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -9,8 +15,16 @@ const PORT = process.env.PORT || 8080;
 // Disable CORS protection by allowing all origins
 app.use(cors());
 
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, "dist")));
+
 app.get("/ping", (req, res) => {
   res.json({ message: "Pong" });
+});
+
+// Handle all other routes and serve the React app
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 
 // Create an HTTP server using the Express app
@@ -44,6 +58,6 @@ io.on("connection", (socket) => {
 });
 
 // Start the server and listen on the defined port
-server.listen(PORT, "0.0.0.0", () => {
+server.listen(PORT, () => {
   console.log(`Le serveur tourne sur le port ${PORT}`);
 });
