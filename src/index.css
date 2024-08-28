@@ -35,6 +35,15 @@ button {
     padding-bottom: 5px;
 }
 
+.outgoingMessage {
+  background-color: #daf8e3; /* Couleur de fond pour vos messages */
+  padding: 10px;
+  border-radius: 10px;
+  max-width: 70%; /* Largeur maximale pour la bulle de message */
+  float: right; /* Aligner à droite */
+  clear: both;
+}
+
 .incomingMessage {
   background-color: #f1f0f0; /* Couleur de fond pour les messages de l'autre */
   padding: 10px;
