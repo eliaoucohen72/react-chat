@@ -79,7 +79,7 @@ function App() {
             <div
               className={msg.username === username ? "myMessage" : "hisMessage"}
             >
-              <div className="username">{username}</div>
+              <div className="username">{msg.username}</div>
               <div>{msg.message}</div>
               <img className="check" src={check} alt='' />
             </div>
