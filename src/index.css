@@ -1,0 +1,59 @@
+:root {
+  padding: 50px;
+}
+
+.inputWrapper {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+input {
+  flex: 1;
+  height: 40px;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+button {
+  color: black;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+.message {
+  display: block; /* Assure que chaque message commence sur une nouvelle ligne */
+  clear: both; /* Empêche les bulles de se chevaucher */
+  margin-bottom: 10px; /* Espacement entre les messages */
+  padding: 10px 0;
+}
+
+.username {
+    font-size: 12px;
+    font-weight: 700;
+    padding-bottom: 5px;
+}
+
+.myMessage {
+  background-color: #daf8e3; /* Couleur de fond pour vos messages */
+  padding: 10px;
+  border-radius: 10px;
+  max-width: 70%; /* Largeur maximale pour la bulle de message */
+  float: right; /* Aligner à droite */
+  clear: both;
+}
+
+.hisMessage {
+  background-color: #f1f0f0; /* Couleur de fond pour les messages de l'autre */
+  padding: 10px;
+  border-radius: 10px;
+  max-width: 70%; /* Largeur maximale pour la bulle de message */
+  float: left; /* Aligner à gauche */
+  clear: both;
+}
+
+.check {
+    width: 10px;
+    float: right;
+}
