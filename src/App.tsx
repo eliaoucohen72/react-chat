@@ -14,6 +14,15 @@ interface Message {
   message: string;
 }
 
+const getColorFromUsername = (username: string) => {
+  let hash = 0;
+  for (let i = 0; i < username.length; i++) {
+    hash = username.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const color = `hsl(${hash % 360}, 70%, 80%)`; // Une teinte en HSL
+  return color;
+};
+
 function App() {
   const [username, setUsername] = useState("");
   const [message, setMessage] = useState("");
@@ -42,7 +51,11 @@ function App() {
     setUsername(windowId);
   }, []);
 
-  const sendMessage = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const sendMessage = (
+    e:
+      | React.KeyboardEvent<HTMLInputElement>
+      | React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
     e.preventDefault();
     if (socket) {
       const msg: Message = {
@@ -59,9 +72,7 @@ function App() {
 
   const onKeyDownMessage = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      sendMessage(
-        e as unknown as React.MouseEvent<HTMLButtonElement, MouseEvent>
-      );
+      sendMessage(e);
     }
   };
 
@@ -77,10 +88,17 @@ function App() {
         <button onClick={sendMessage}>send</button>
       </div>
       {messages.map((msg: Message, index: number) => {
+        const color = getColorFromUsername(msg.username);
+
         return (
           <div key={index} className="message">
             <div
-              className={msg.username === username ? "myMessage" : "hisMessage"}
+              className={
+                msg.username === username
+                  ? "outgoingMessage"
+                  : "incomingMessage"
+              }
+              style={{ backgroundColor: color }}
             >
               <div className="username">{msg.username}</div>
               <div>{msg.message}</div>
