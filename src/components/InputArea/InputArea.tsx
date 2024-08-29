@@ -1,27 +1,14 @@
 import { memo, SetStateAction } from "react";
 import style from "./style";
-// import attach from "../../assets/attach.png";
 import { css } from "../../utils/common";
 
 interface InputAreaProps {
   message: string;
   sendMessage: () => void;
   setMessage: React.Dispatch<SetStateAction<string>>;
-  setFile: React.Dispatch<SetStateAction<File | null>>;
 }
 
-const InputArea = ({
-  message,
-  sendMessage,
-  setMessage,
-  // setFile,
-}: InputAreaProps) => {
-  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (e.target.files) {
-  //     setFile(e.target.files[0]);
-  //   }
-  // };
-
+const InputArea = ({ message, sendMessage, setMessage }: InputAreaProps) => {
   const onChangeMessage = (e: React.ChangeEvent<HTMLInputElement>) =>
     setMessage(e.target.value);
 
@@ -43,12 +30,6 @@ const InputArea = ({
   return (
     <div style={style.wrapper}>
       <div style={css(style.inputWrapper)}>
-        {/* <div style={css(style.attach)}>
-          <label style={style.pointer}>
-            <input hidden type="file" onChange={handleFileChange} />
-            <img style={style.w20} src={attach} alt="" />
-          </label>
-        </div> */}
         <input
           style={style.input}
           value={message}
@@ -62,7 +43,7 @@ const InputArea = ({
         style={style.button(!message)}
         onClick={_sendMessage}
       >
-        send
+        Send message
       </button>
     </div>
   );

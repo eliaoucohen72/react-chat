@@ -20,9 +20,14 @@ function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [message, setMessage] = useState("");
-  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
+    fetch("https://api.ipify.org?format=json")
+      .then((response) => response.json())
+      .then((data) => {
+        setIp(data.ip);
+      });
+
     const newSocket = io(SOCKET_SERVER_URL);
     setSocket(newSocket);
 
@@ -41,14 +46,6 @@ function App() {
       setUsername(sessionStorageUsername);
     }
   }, [username]);
-
-  useEffect(() => {
-    fetch("https://api.ipify.org?format=json")
-      .then((response) => response.json())
-      .then((data) => {
-        setIp(data.ip);
-      });
-  }, []);
 
   const onChangeTempUsername = (e: React.ChangeEvent<HTMLInputElement>) =>
     setTempUsername(e.target.value);
@@ -75,9 +72,6 @@ function App() {
 
   const sendMessage = () => {
     if (socket) {
-      if (file) {
-        // upload to image server
-      }
       const msg: Message = {
         username,
         message,
@@ -103,7 +97,6 @@ function App() {
           <Logged resetUsername={resetUsername} username={username} />
           <InputArea
             message={message}
-            setFile={setFile}
             setMessage={setMessage}
             sendMessage={sendMessage}
           />
@@ -112,8 +105,8 @@ function App() {
               key={index}
               index={index}
               msg={msg}
-              username={username}
               socket={socket}
+              ip={ip}
             />
           ))}
         </>

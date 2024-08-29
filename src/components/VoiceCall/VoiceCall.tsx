@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, memo, useCallback } from "react";
-import callIcon from "../../assets/call.png";
-import hangUpIcon from "../../assets/hangUp.png";
 import { Socket } from "socket.io-client";
+import callIcon from "../../assets/call.png";
+import style from "./style";
+import hangUpIcon from "../../assets/hangUp.png";
 
 interface VoiceCallProps {
   socket: Socket | null;
@@ -14,11 +15,8 @@ function VoiceCall({ socket, receiverIp }: VoiceCallProps) {
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
 
-  const startCall = useCallback(async () => {
-    if (!receiverIp) {
-      alert("Please enter the receiver's IP address");
-      return;
-    }
+  const initializePeerConnection = useCallback(() => {
+    if (peerConnectionRef.current) return;
 
     peerConnectionRef.current = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
@@ -26,6 +24,7 @@ function VoiceCall({ socket, receiverIp }: VoiceCallProps) {
 
     peerConnectionRef.current.onicecandidate = (event) => {
       if (event.candidate) {
+        console.log("Sending ICE candidate", event.candidate);
         socket?.emit("ice-candidate", {
           candidate: event.candidate,
           ip: receiverIp,
@@ -34,28 +33,60 @@ function VoiceCall({ socket, receiverIp }: VoiceCallProps) {
     };
 
     peerConnectionRef.current.ontrack = (event) => {
+      console.log("Received remote track", event.streams);
       if (remoteAudioRef.current) {
         remoteAudioRef.current.srcObject = event.streams[0];
+        console.log(
+          "Remote audio stream set:",
+          remoteAudioRef.current.srcObject
+        );
       }
     };
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    if (localAudioRef.current) {
-      localAudioRef.current.srcObject = stream;
-    }
+    peerConnectionRef.current.onconnectionstatechange = () => {
+      console.log(
+        "Connection state change:",
+        peerConnectionRef.current?.connectionState
+      );
+    };
 
-    stream.getTracks().forEach((track) => {
-      if (peerConnectionRef.current) {
-        peerConnectionRef.current.addTrack(track, stream);
-      }
-    });
-
-    const offer = await peerConnectionRef.current.createOffer();
-    await peerConnectionRef.current.setLocalDescription(offer);
-
-    socket?.emit("offer", { sdp: offer, ip: receiverIp });
-    setIsCalling(true);
+    peerConnectionRef.current.oniceconnectionstatechange = () => {
+      console.log(
+        "ICE Connection State:",
+        peerConnectionRef.current?.iceConnectionState
+      );
+    };
   }, [receiverIp, socket]);
+
+  const startCall = useCallback(async () => {
+    initializePeerConnection();
+
+    if (peerConnectionRef.current) {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach((track) => {
+        console.log("Track kind:", track.kind);
+      });
+
+      console.log("Local stream obtained", stream);
+      if (localAudioRef.current) {
+        localAudioRef.current.srcObject = stream;
+      }
+
+      stream.getTracks().forEach((track) => {
+        if (peerConnectionRef.current) {
+          peerConnectionRef.current.addTrack(track, stream);
+          console.log("Track added:", track);
+        }
+      });
+
+      const offer = await peerConnectionRef.current.createOffer();
+      await peerConnectionRef.current.setLocalDescription(offer);
+
+      console.log("Sending offer", offer);
+      socket?.emit("offer", { sdp: offer, ip: receiverIp });
+      setIsCalling(true);
+    }
+  }, [initializePeerConnection, receiverIp, socket]);
 
   const handleOffer = useCallback(
     async (offer: RTCSessionDescriptionInit) => {
@@ -70,6 +101,7 @@ function VoiceCall({ socket, receiverIp }: VoiceCallProps) {
       const answer = await peerConnectionRef.current?.createAnswer();
       await peerConnectionRef.current?.setLocalDescription(answer);
 
+      console.log("Sending answer", answer);
       socket?.emit("answer", { sdp: answer, ip: receiverIp });
     },
     [receiverIp, socket, startCall]
@@ -80,6 +112,7 @@ function VoiceCall({ socket, receiverIp }: VoiceCallProps) {
       "offer",
       async (data: { sdp: RTCSessionDescriptionInit; ip: string }) => {
         if (data.ip === receiverIp) {
+          console.log("Received offer", data.sdp);
           await handleOffer(data.sdp);
         }
       }
@@ -89,21 +122,20 @@ function VoiceCall({ socket, receiverIp }: VoiceCallProps) {
       "answer",
       async (data: { sdp: RTCSessionDescriptionInit; ip: string }) => {
         if (data.ip === receiverIp) {
+          console.log("Received answer", data.sdp);
           await handleAnswer(data.sdp);
         }
       }
     );
 
-    socket?.on(
-      "ice-candidate",
-      (data: { candidate: RTCIceCandidateInit; ip: string }) => {
-        if (data.ip === receiverIp && peerConnectionRef.current) {
-          peerConnectionRef.current.addIceCandidate(
-            new RTCIceCandidate(data.candidate)
-          );
-        }
+    socket?.on("ice-candidate", (data) => {
+      if (data.ip === receiverIp && peerConnectionRef.current) {
+        console.log("Received ICE candidate", data.candidate);
+        peerConnectionRef.current.addIceCandidate(
+          new RTCIceCandidate(data.candidate)
+        );
       }
-    );
+    });
 
     return () => {
       socket?.off("offer");
@@ -119,23 +151,29 @@ function VoiceCall({ socket, receiverIp }: VoiceCallProps) {
   };
 
   const hangUp = () => {
-    peerConnectionRef.current?.close();
-    peerConnectionRef.current = null;
+    console.log("Hanging up");
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current
+        .getSenders()
+        .forEach((sender) => sender.track?.stop());
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
+    if (localAudioRef.current && localAudioRef.current.srcObject) {
+      (localAudioRef.current.srcObject as MediaStream)
+        .getTracks()
+        .forEach((track) => track.stop());
+    }
     setIsCalling(false);
   };
 
   return (
-    <div>
-      <button>
-        <img
-          onClick={startCall}
-          style={{ width: "20px" }}
-          src={callIcon}
-          alt=""
-        />
+    <div style={style.wrapper}>
+      <button style={style.action} onClick={startCall} disabled={isCalling}>
+        <img style={{ width: "20px" }} src={callIcon} alt="Call" />
       </button>
-      <button onClick={hangUp} disabled={!isCalling}>
-        <img style={{ width: "20px" }} src={hangUpIcon} alt="" />{" "}
+      <button style={style.action} onClick={hangUp} disabled={!isCalling}>
+        <img style={{ width: "20px" }} src={hangUpIcon} alt="Hang Up" />
       </button>
       <audio ref={localAudioRef} autoPlay muted />
       <audio ref={remoteAudioRef} autoPlay />
