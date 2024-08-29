@@ -25,15 +25,12 @@ const Bubble = ({ index, msg, username, socket }: BubbleProps) => {
             : css({ ...style.incomingMessage, backgroundColor: color })
         }
       >
-        <div style={style.username}>{msg.ip}</div>
+        {/* <div style={style.username}>{msg.ip}</div> */}
         <div style={style.username}>{msg.username}</div>
         <div>{msg.message}</div>
-        {
-          /*msg.username !== username && */ <VoiceCall
-            socket={socket}
-            receiverIp={msg.ip}
-          />
-        }
+        {msg.username !== username && (
+          <VoiceCall socket={socket} receiverIp={msg.ip} />
+        )}
 
         <img style={css(style.check)} src={check} alt="" />
       </div>
