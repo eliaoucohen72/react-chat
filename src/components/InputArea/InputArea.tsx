@@ -1,7 +1,7 @@
 import { memo, SetStateAction } from "react";
 import style from "./style";
 // import attach from "../../assets/attach.png";
-import { css } from "../../utils";
+import { css } from "../../utils/common";
 
 interface InputAreaProps {
   message: string;

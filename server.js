@@ -44,14 +44,23 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log(`Nouvelle connexion: ${socket.id}`);
 
-  // Listen for messages from the client
+  socket.on("offer", (data) => {
+    socket.broadcast.emit("offer", data);
+  });
+
+  socket.on("answer", (data) => {
+    socket.broadcast.emit("answer", data);
+  });
+
+  socket.on("ice-candidate", (data) => {
+    socket.broadcast.emit("ice-candidate", data);
+  });
+
   socket.on("CLIENT_MSG", (data) => {
     console.log(`Message reçu de ${socket.id}:`, data);
-    // Emit the message to all connected clients
     io.emit("SERVER_MSG", data);
   });
 
-  // Handle client disconnection
   socket.on("disconnect", () => {
     console.log(`Déconnexion: ${socket.id}`);
   });

@@ -1,6 +1,6 @@
 import { memo } from "react";
 import style from "./style";
-import { css, getColorFromUsername } from "../../utils";
+import { css, getColorFromUsername } from "../../utils/common";
 import { Message } from "../../interface";
 import check from "../../assets/check.png";
 
@@ -21,6 +21,7 @@ const Bubble = ({ index, msg, username }: BubbleProps) => {
             : css({ ...style.incomingMessage, backgroundColor: color })
         }
       >
+        <div style={style.username}>{msg.ip}</div>
         <div style={style.username}>{msg.username}</div>
         <div>{msg.message}</div>
         <img style={css(style.check)} src={check} alt="" />
