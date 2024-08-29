@@ -12,7 +12,6 @@ import Bubble from "./components/Bubble/Bubble";
 import Login from "./components/Login/Login";
 import Logged from "./components/Logged/Logged";
 import Ip from "./components/Ip/Ip";
-import VoiceCall from "./components/VoiceCall/VoiceCall";
 
 function App() {
   const [ip, setIp] = useState("");
@@ -102,7 +101,6 @@ function App() {
       ) : (
         <>
           <Logged resetUsername={resetUsername} username={username} />
-          <VoiceCall socket={socket} />
           <InputArea
             message={message}
             setFile={setFile}
@@ -110,7 +108,13 @@ function App() {
             sendMessage={sendMessage}
           />
           {messages.map((msg: Message, index: number) => (
-            <Bubble key={index} index={index} msg={msg} username={username} />
+            <Bubble
+              key={index}
+              index={index}
+              msg={msg}
+              username={username}
+              socket={socket}
+            />
           ))}
         </>
       )}

@@ -1,41 +1,20 @@
-import { useState, useRef, useEffect, memo } from "react";
+import { useState, useRef, useEffect, memo, useCallback } from "react";
+import callIcon from "../../assets/call.png";
+import hangUpIcon from "../../assets/hangUp.png";
+import { Socket } from "socket.io-client";
 
-function VoiceCall({ socket }: { socket: any; }) {
+interface VoiceCallProps {
+  socket: Socket | null;
+  receiverIp: string;
+}
+
+function VoiceCall({ socket, receiverIp }: VoiceCallProps) {
   const [isCalling, setIsCalling] = useState(false);
-  const [receiverIp, setReceiverIp] = useState("");
   const localAudioRef = useRef<HTMLAudioElement>(null);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
 
-  useEffect(() => {
-    socket.on("offer", async (data: { sdp: any; ip: string }) => {
-      if (data.ip === receiverIp) {
-        await handleOffer(data.sdp);
-      }
-    });
-
-    socket.on("answer", async (data: { sdp: any; ip: string }) => {
-      if (data.ip === receiverIp) {
-        await handleAnswer(data.sdp);
-      }
-    });
-
-    socket.on("ice-candidate", (data: { candidate: any; ip: string }) => {
-      if (data.ip === receiverIp && peerConnectionRef.current) {
-        peerConnectionRef.current.addIceCandidate(
-          new RTCIceCandidate(data.candidate)
-        );
-      }
-    });
-
-    return () => {
-      socket.off("offer");
-      socket.off("answer");
-      socket.off("ice-candidate");
-    };
-  }, [socket, receiverIp]);
-
-  const startCall = async () => {
+  const startCall = useCallback(async () => {
     if (!receiverIp) {
       alert("Please enter the receiver's IP address");
       return;
@@ -47,7 +26,7 @@ function VoiceCall({ socket }: { socket: any; }) {
 
     peerConnectionRef.current.onicecandidate = (event) => {
       if (event.candidate) {
-        socket.emit("ice-candidate", {
+        socket?.emit("ice-candidate", {
           candidate: event.candidate,
           ip: receiverIp,
         });
@@ -74,24 +53,64 @@ function VoiceCall({ socket }: { socket: any; }) {
     const offer = await peerConnectionRef.current.createOffer();
     await peerConnectionRef.current.setLocalDescription(offer);
 
-    socket.emit("offer", { sdp: offer, ip: receiverIp });
+    socket?.emit("offer", { sdp: offer, ip: receiverIp });
     setIsCalling(true);
-  };
+  }, [receiverIp, socket]);
 
-  const handleOffer = async (offer: RTCSessionDescriptionInit) => {
-    if (!peerConnectionRef.current) {
-      startCall();
-    }
+  const handleOffer = useCallback(
+    async (offer: RTCSessionDescriptionInit) => {
+      if (!peerConnectionRef.current) {
+        startCall();
+      }
 
-    await peerConnectionRef.current?.setRemoteDescription(
-      new RTCSessionDescription(offer)
+      await peerConnectionRef.current?.setRemoteDescription(
+        new RTCSessionDescription(offer)
+      );
+
+      const answer = await peerConnectionRef.current?.createAnswer();
+      await peerConnectionRef.current?.setLocalDescription(answer);
+
+      socket?.emit("answer", { sdp: answer, ip: receiverIp });
+    },
+    [receiverIp, socket, startCall]
+  );
+
+  useEffect(() => {
+    socket?.on(
+      "offer",
+      async (data: { sdp: RTCSessionDescriptionInit; ip: string }) => {
+        if (data.ip === receiverIp) {
+          await handleOffer(data.sdp);
+        }
+      }
     );
 
-    const answer = await peerConnectionRef.current?.createAnswer();
-    await peerConnectionRef.current?.setLocalDescription(answer);
+    socket?.on(
+      "answer",
+      async (data: { sdp: RTCSessionDescriptionInit; ip: string }) => {
+        if (data.ip === receiverIp) {
+          await handleAnswer(data.sdp);
+        }
+      }
+    );
 
-    socket.emit("answer", { sdp: answer, ip: receiverIp });
-  };
+    socket?.on(
+      "ice-candidate",
+      (data: { candidate: RTCIceCandidateInit; ip: string }) => {
+        if (data.ip === receiverIp && peerConnectionRef.current) {
+          peerConnectionRef.current.addIceCandidate(
+            new RTCIceCandidate(data.candidate)
+          );
+        }
+      }
+    );
+
+    return () => {
+      socket?.off("offer");
+      socket?.off("answer");
+      socket?.off("ice-candidate");
+    };
+  }, [socket, receiverIp, handleOffer]);
 
   const handleAnswer = async (answer: RTCSessionDescriptionInit) => {
     await peerConnectionRef.current?.setRemoteDescription(
@@ -107,17 +126,16 @@ function VoiceCall({ socket }: { socket: any; }) {
 
   return (
     <div>
-      <input
-        type="text"
-        placeholder="Enter Receiver's IP Address"
-        value={receiverIp}
-        onChange={(e) => setReceiverIp(e.target.value)}
-      />
-      <button onClick={startCall} disabled={isCalling}>
-        Start Call
+      <button>
+        <img
+          onClick={startCall}
+          style={{ width: "20px" }}
+          src={callIcon}
+          alt=""
+        />
       </button>
       <button onClick={hangUp} disabled={!isCalling}>
-        Hang Up
+        <img style={{ width: "20px" }} src={hangUpIcon} alt="" />{" "}
       </button>
       <audio ref={localAudioRef} autoPlay muted />
       <audio ref={remoteAudioRef} autoPlay />
