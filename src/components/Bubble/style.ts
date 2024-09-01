@@ -1,15 +1,3 @@
-const message = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "10px",
-  padding: "10px",
-  borderRadius: "10px",
-  maxWidth: "70%",
-  float: "right",
-  clear: "both",
-  overflowWrap: 'break-word'
-};
-
 const style = {
   wrapper: {
     display: "block",
@@ -21,14 +9,18 @@ const style = {
     fontSize: "12px",
     fontWeight: 700,
   },
-  outgoingMessage: {
-    ...message,
-    float: "right",
-  },
-  incomingMessage: {
-    ...message,
-    float: "left",
-  },
+  message: (outgoing: boolean, backgroundColor: string) => ({
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+    padding: "10px",
+    borderRadius: "10px",
+    maxWidth: "70%",
+    float: outgoing ? "right" : "left",
+    clear: "both",
+    overflowWrap: "break-word",
+    backgroundColor
+  }),
   check: {
     width: "10px",
     float: "right",

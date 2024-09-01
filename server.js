@@ -44,21 +44,6 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log(`Nouvelle connexion: ${socket.id}`);
 
-  socket.on("offer", (data) => {
-    console.log("Offer received, broadcasting", data);
-    socket.broadcast.emit("offer", data);
-  });
-
-  socket.on("answer", (data) => {
-    console.log("Answer received, broadcasting", data);
-    socket.broadcast.emit("answer", data);
-  });
-
-  socket.on("ice-candidate", (data) => {
-    console.log("ICE Candidate received, broadcasting", data);
-    socket.broadcast.emit("ice-candidate", data);
-  });
-
   socket.on("CLIENT_MSG", (data) => {
     console.log(`Message reçu de ${socket.id}:`, data);
     io.emit("SERVER_MSG", data);

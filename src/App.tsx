@@ -12,6 +12,7 @@ import Bubble from "./components/Bubble/Bubble";
 import Login from "./components/Login/Login";
 import Logged from "./components/Logged/Logged";
 import Ip from "./components/Ip/Ip";
+import { AppContextProvider } from "./context";
 
 function App() {
   const [ip, setIp] = useState("");
@@ -83,7 +84,7 @@ function App() {
   };
 
   return (
-    <>
+    <AppContextProvider>
       <Ip ip={ip} />
       {!username ? (
         <Login
@@ -101,17 +102,11 @@ function App() {
             sendMessage={sendMessage}
           />
           {messages.map((msg: Message, index: number) => (
-            <Bubble
-              key={index}
-              index={index}
-              msg={msg}
-              socket={socket}
-              ip={ip}
-            />
+            <Bubble key={index} index={index} msg={msg} ip={ip} />
           ))}
         </>
       )}
-    </>
+    </AppContextProvider>
   );
 }
 
