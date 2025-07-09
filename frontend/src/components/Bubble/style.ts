@@ -1,0 +1,53 @@
+const style = {
+  wrapper: {
+    display: "flex",
+    alignItems: "flex-end",
+    marginBottom: "14px",
+    width: "100%",
+    animation: "bubble-in 0.3s ease",
+  },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: "50%",
+    background: "#e0eafc",
+    color: "#4a6fa1",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: 700,
+    fontSize: 18,
+    margin: "0 10px",
+    flexShrink: 0,
+    boxShadow: "0 2px 8px rgba(60,60,120,0.08)",
+  },
+  content: (outgoing: boolean, backgroundColor: string) => ({
+    display: "flex",
+    flexDirection: "column",
+    alignItems: outgoing ? "flex-end" : "flex-start",
+    background: outgoing ? "#daf8e3" : backgroundColor,
+    color: "#222",
+    borderRadius: outgoing ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+    boxShadow: "0 2px 8px rgba(60,60,120,0.10)",
+    padding: "12px 16px",
+    maxWidth: "70%",
+    wordBreak: "break-word",
+    marginLeft: outgoing ? "auto" : 0,
+    marginRight: outgoing ? 0 : "auto",
+    transition: "background 0.2s",
+  }),
+  username: {
+    fontSize: "13px",
+    fontWeight: 600,
+    opacity: 0.7,
+    marginBottom: 2,
+  },
+  timestamp: {
+    fontSize: "11px",
+    color: "#888",
+    marginTop: 4,
+    alignSelf: "flex-end",
+  },
+};
+
+export default style;
